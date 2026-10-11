@@ -1,0 +1,17 @@
+# Demo policy pointing at the local echo upstream (examples/echo_upstream.py).
+# Lets you exercise the proxy with a fake secret and no network. Default deny still applies:
+# only the routes below are allowed; everything else is 403.
+services:
+  echo:
+    base_url: http://127.0.0.1:9999
+    auth:
+      header: Authorization
+      format: "Bearer {secret}"
+      secret: DEMO_API_KEY        # a FAKE key injected server-side for the demo
+    rate_limit_per_minute: 60
+    forward_headers: [content-type, accept]
+    routes:
+      - methods: [GET, POST]
+        path: "^anything/.*$"
+      - methods: [GET]
+        path: "^get$"
