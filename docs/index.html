@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>secret-broker · a manifesto for AI-agent security</title>
+<style>
+  :root{
+    --paper:#f2ede2; --paper2:#ece5d6; --card:#f6f1e7;
+    --ink:#15120d; --ink2:#2c271d; --muted:#766a54;
+    --rule:#15120d; --red:#dc3321; --amber:#8a5a06; --green:#1f7a3d; --blue:#1f5fae;
+    --mono:"SF Mono",SFMono-Regular,ui-monospace,"Cascadia Code",Consolas,Menlo,monospace;
+    --head:"Helvetica Neue",Helvetica,Arial,"Arial Narrow",sans-serif;
+    --body:Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--body); color:var(--ink); background:var(--paper);
+    background-image:repeating-linear-gradient(transparent 0 27px, rgba(21,18,13,.045) 27px 28px);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px 90px}
+
+  /* ---------- masthead ---------- */
+  .masthead{padding-top:26px}
+  .mast-bar{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:space-between;
+    font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.18em;
+    font-size:11px;color:var(--ink);border-top:3px solid var(--ink);border-bottom:1px solid var(--ink);
+    padding:10px 0;margin-bottom:26px}
+  .mast-bar span:nth-child(2){color:var(--red)}
+  h1.mast-title{font-family:var(--head);font-weight:800;text-transform:uppercase;
+    font-size:clamp(40px,8.4vw,94px);line-height:.9;letter-spacing:-.025em;margin:0 0 20px}
+  h1.mast-title em{font-family:var(--body);font-style:italic;font-weight:400;text-transform:none;
+    color:var(--red);letter-spacing:-.01em}
+  .lede{font-size:clamp(16px,2.3vw,21px);max-width:760px;color:var(--ink2);margin:0 0 26px}
+  .lede b{color:var(--ink)}
+
+  .tenets{list-style:none;margin:0 0 6px;padding:0;border-top:1px solid var(--ink);
+    display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .tenets li{display:flex;gap:14px;align-items:baseline;padding:14px 16px 14px 0;
+    border-bottom:1px solid rgba(21,18,13,.25);font-family:var(--head);font-weight:600;
+    font-size:15px;color:var(--ink)}
+  .tenets li:nth-child(odd){border-right:1px solid rgba(21,18,13,.25);padding-right:26px}
+  .tenets .no{font-family:var(--head);font-weight:800;font-size:13px;color:var(--red);
+    border:2px solid var(--ink);padding:2px 6px;flex:none;letter-spacing:.02em}
+
+  /* ---------- section heads ---------- */
+  .section-head{display:flex;align-items:flex-end;gap:16px;margin:46px 0 16px;
+    border-bottom:3px solid var(--ink);padding-bottom:8px}
+  .section-head .sno{font-family:var(--head);font-weight:800;font-size:13px;color:var(--paper);
+    background:var(--ink);padding:4px 9px;letter-spacing:.04em}
+  .section-head h2{font-family:var(--head);font-weight:800;text-transform:uppercase;
+    font-size:clamp(20px,3.4vw,30px);letter-spacing:-.01em;margin:0}
+  .section-title{font-family:var(--head);font-weight:800;text-transform:uppercase;letter-spacing:.02em;
+    font-size:14px;margin:40px 0 12px;border-bottom:2px solid var(--ink);padding-bottom:8px;color:var(--ink)}
+
+  /* ---------- controls ---------- */
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:4px 0 14px}
+  button{font-family:var(--head);cursor:pointer;border:2px solid var(--ink);border-radius:2px;
+    font-weight:800;text-transform:uppercase;letter-spacing:.04em;font-size:13px;padding:12px 16px;
+    transition:transform .1s ease,background .15s,color .15s}
+  button:active{transform:translateY(1px)}
+  .scn{background:var(--ink);color:var(--paper)}
+  .scn:hover{background:var(--red);border-color:var(--red)}
+  .scn.alt{background:var(--paper);color:var(--ink)}
+  .scn.alt:hover{background:var(--ink);color:var(--paper)}
+  .scn.danger{background:var(--red);color:#fff;border-color:var(--red)}
+  .scn.danger:hover{background:var(--ink);border-color:var(--ink)}
+  .scn:disabled{opacity:.38;cursor:not-allowed}
+  .ghost{background:transparent;color:var(--ink);border:2px dashed var(--ink)}
+  .ghost:hover{background:var(--ink);color:var(--paper)}
+  .speed{margin-left:auto;display:flex;align-items:center;gap:10px;color:var(--muted);
+    font-family:var(--head);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.1em}
+  input[type=range]{accent-color:var(--red)}
+
+  /* ---------- stage ---------- */
+  .stage{position:relative;margin-top:12px;border:3px solid var(--ink);background:var(--paper2);
+    padding:26px 20px 20px;overflow:hidden}
+  .nodes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:stretch;position:relative;z-index:2}
+  .node{border:2px solid var(--ink);background:var(--card);padding:16px;position:relative;
+    transition:box-shadow .2s,border-color .2s,transform .2s}
+  .node .ic{width:46px;height:46px;border:2px solid var(--ink);display:grid;place-items:center;
+    font-size:24px;background:var(--paper);margin-bottom:10px}
+  .node h3{margin:0;font-family:var(--head);font-weight:800;text-transform:uppercase;font-size:16px;letter-spacing:-.01em}
+  .node p{margin:5px 0 0;color:var(--muted);font-size:13px}
+  .node .port{font-family:var(--mono);font-size:11px;color:var(--blue);margin-top:8px;display:inline-block}
+  .node.active{border-color:var(--red);box-shadow:6px 6px 0 var(--red);transform:translate(-2px,-2px)}
+  .node .pill{position:absolute;top:12px;right:12px;font-family:var(--head);font-weight:800;
+    text-transform:uppercase;font-size:10px;letter-spacing:.08em;padding:3px 7px;border:2px solid var(--ink);color:var(--ink)}
+  .node.agent .pill{color:var(--red);border-color:var(--red)}
+  .node.upstream .pill{color:var(--green);border-color:var(--green)}
+
+  .vault{margin-top:12px;border:2px dashed var(--ink);padding:10px;background:var(--paper)}
+  .vault .vrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .vault .vlabel{font-family:var(--head);font-weight:800;font-size:11px;color:var(--ink);
+    text-transform:uppercase;letter-spacing:.1em}
+  .keychip{font-family:var(--mono);font-size:12px;color:var(--amber);background:#f6ead2;
+    border:2px solid var(--ink);padding:4px 8px;white-space:nowrap}
+  .vault.glow{border-style:solid;border-color:var(--red);box-shadow:4px 4px 0 var(--red)}
+  .mini{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--head);font-weight:600}
+  .reveal{font-family:var(--head);font-weight:800;text-transform:uppercase;font-size:10px;
+    letter-spacing:.06em;color:var(--ink);background:none;border:2px solid var(--ink);padding:3px 8px;border-radius:0}
+  .reveal:hover{background:var(--ink);color:var(--paper)}
+
+  .wire{position:absolute;left:0;right:0;top:72px;height:2px;z-index:1}
+  .wire line{stroke:rgba(21,18,13,.45)}
+  .packet{position:absolute;top:63px;left:16.6%;transform:translateX(-50%);z-index:3;
+    display:flex;align-items:center;gap:8px;opacity:0;
+    transition:left .9s cubic-bezier(.6,.05,.3,1),opacity .25s}
+  .packet .dot{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--paper);
+    box-shadow:0 0 0 2px var(--ink)}
+  .packet.bad .dot{background:var(--red);box-shadow:0 0 0 2px var(--red)}
+  .packet .lbl{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--paper);
+    border:2px solid var(--ink);padding:3px 8px;white-space:nowrap}
+
+  /* ---------- lower grid ---------- */
+  .grid2{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:16px}
+  .card{border:2px solid var(--ink);background:var(--card);overflow:hidden}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;
+    border-bottom:2px solid var(--ink);background:var(--ink)}
+  .card .hd h4{margin:0;font-family:var(--head);font-weight:800;font-size:12px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--paper)}
+  .dotrow{display:flex;gap:6px}.dotrow i{width:10px;height:10px;border-radius:50%;display:block;background:var(--paper);opacity:.5}
+  .dotrow i:nth-child(1){background:var(--red);opacity:1}
+
+  .inspector{padding:14px;min-height:210px;font-family:var(--mono);font-size:12.5px}
+  .inspector .ttl{font-family:var(--head);font-weight:800;font-size:11px;color:var(--muted);
+    margin-bottom:10px;text-transform:uppercase;letter-spacing:.1em}
+  .ln{padding:2px 6px;white-space:pre-wrap;word-break:break-word}
+  .ln.strike{color:var(--red);text-decoration:line-through;background:rgba(220,51,33,.1)}
+  .ln.inject{color:var(--amber);background:rgba(138,90,6,.12)}
+  .ln.secret{color:var(--red)}
+  .ln.redact{color:var(--green);background:rgba(31,122,61,.12)}
+  .ln.dim{color:var(--muted)}
+  .ln.good{color:var(--green)}
+  .empty{color:var(--muted);font-family:var(--body);font-style:italic;display:grid;place-items:center;height:180px;text-align:center}
+
+  .log{padding:10px 8px;min-height:210px;max-height:280px;overflow:auto}
+  .log .li{display:flex;gap:10px;padding:8px 10px;margin:4px 2px;font-size:14px;
+    border-bottom:1px solid rgba(21,18,13,.14);animation:pop .22s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .log .li .b{flex:none;width:24px;height:24px;border:2px solid var(--ink);display:grid;place-items:center;
+    font-family:var(--head);font-size:12px;font-weight:800}
+  .li.info .b{color:var(--blue)} .li.good .b{color:var(--green)}
+  .li.warn .b{color:var(--amber)} .li.bad .b{color:var(--red);border-color:var(--red)}
+  .li.step .b{background:var(--ink);color:var(--paper)}
+
+  /* ---------- admin lane ---------- */
+  .admin{border:2px solid var(--ink);background:var(--card);overflow:hidden}
+  .admin .hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:2px solid var(--ink);background:var(--ink)}
+  .admin .hd .ic{font-size:18px}
+  .admin .hd h4{margin:0;font-family:var(--head);font-weight:800;text-transform:uppercase;
+    letter-spacing:.06em;font-size:14px;color:var(--paper)}
+  .admin .hd .sub{color:#e9c7c1;font-size:12px;margin-left:auto;font-family:var(--mono)}
+  .queue{padding:14px;min-height:92px}
+  .qrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:2px solid var(--ink);
+    padding:12px;background:var(--paper);animation:pop .3s ease}
+  .qrow .meta{font-family:var(--mono);font-size:12.5px}
+  .qrow .meta b{color:var(--ink)} .qrow .meta .args{color:var(--amber)}
+  .status{font-family:var(--head);font-weight:800;text-transform:uppercase;font-size:11px;
+    letter-spacing:.06em;padding:4px 10px;border:2px solid var(--ink)}
+  .status.pending{color:var(--amber)} .status.success{color:var(--green);border-color:var(--green)}
+  .status.denied{color:var(--red);border-color:var(--red)}
+  .qrow .sp{flex:1}
+  .btn-approve{background:var(--green);color:#fff;border-color:var(--green);padding:9px 14px}
+  .btn-deny{background:var(--red);color:#fff;border-color:var(--red);padding:9px 14px}
+  .btn-approve:disabled,.btn-deny:disabled{opacity:.4;cursor:not-allowed}
+  .queue .hint{color:var(--muted);font-family:var(--body);font-style:italic;display:grid;place-items:center;height:64px;text-align:center}
+  .outbox{margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--green);
+    background:#eaf3ec;border:2px solid var(--green);padding:10px;display:none;white-space:pre-wrap;width:100%}
+
+  /* ---------- guards ---------- */
+  .badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;
+    border:2px solid var(--ink);border-bottom:none}
+  .badge{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--ink);
+    border-right:2px solid var(--ink);padding:12px 14px;background:var(--card);
+    font-family:var(--head);font-weight:600;font-size:13px;color:var(--muted);transition:.2s}
+  .badge .x{width:24px;height:24px;border:2px solid var(--ink);display:grid;place-items:center;
+    background:var(--paper);font-size:12px;font-weight:800}
+  .badge.on{color:var(--paper);background:var(--ink)}
+  .badge.on .x{background:var(--red);color:#fff;border-color:var(--red)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;color:var(--muted);
+    font-family:var(--head);font-weight:600;font-size:12px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .sw{width:14px;height:14px;border:2px solid var(--ink);display:inline-block}
+
+  footer{margin-top:50px;border-top:3px solid var(--ink);padding-top:14px;
+    font-family:var(--head);font-weight:600;color:var(--muted);font-size:13px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  footer a{color:var(--red);text-decoration:none;font-weight:800}
+
+  @media (max-width:860px){
+    .tenets{grid-template-columns:1fr}
+    .tenets li:nth-child(odd){border-right:none;padding-right:16px}
+    .nodes{grid-template-columns:1fr}
+    .wire,.packet{display:none}
+    .grid2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="mast-bar">
+      <span>Secret-Broker</span>
+      <span>A Manifesto for AI-Agent Security</span>
+      <span>No.01 — 2026</span>
+    </div>
+    <h1 class="mast-title">Agents do the work.<br><em>They never hold your keys.</em></h1>
+    <p class="lede">An AI agent operates through a local gatekeeper. It <b>never sees your real keys</b>,
+    it can only reach <b>approved destinations</b>, and it <b>cannot run a risky command</b> without your
+    explicit sign-off. Below, watch exactly what happens on the wire.</p>
+
+    <ol class="tenets">
+      <li><span class="no">01</span><span>Keys belong to you — never to the agent.</span></li>
+      <li><span class="no">02</span><span>Default deny. Nothing is reachable unless it is listed.</span></li>
+      <li><span class="no">03</span><span>No shell. No arbitrary commands. Ever.</span></li>
+      <li><span class="no">04</span><span>Every secret is scrubbed from every response and log.</span></li>
+      <li><span class="no">05</span><span>Nothing dangerous runs without your approval.</span></li>
+      <li><span class="no">06</span><span>If in doubt, it fails closed.</span></li>
+    </ol>
+  </header>
+
+  <!-- DEMONSTRATION -->
+  <div class="section-head"><span class="sno">§1</span><h2>Watch it on the wire</h2></div>
+
+  <div class="controls">
+    <button class="scn" id="btnProxy">▶ Normal API call</button>
+    <button class="scn alt" id="btnTask">▶ Risky task</button>
+    <button class="scn danger" id="btnAttack">⚠ Injection attack</button>
+    <button class="ghost" id="btnReset">↺ Reset</button>
+    <label class="speed">Speed
+      <input type="range" id="speed" min="0.5" max="2.5" step="0.1" value="1.2" />
+    </label>
+  </div>
+
+  <div class="stage">
+    <svg class="wire" preserveAspectRatio="none" viewBox="0 0 100 2">
+      <line x1="0" y1="1" x2="100" y2="1" stroke-width="2" stroke-dasharray="1.4 1.4"/>
+    </svg>
+    <div class="packet" id="packet"><span class="dot"></span><span class="lbl" id="packetLbl">request</span></div>
+
+    <div class="nodes">
+      <div class="node agent" id="n-agent">
+        <span class="pill">no real keys</span>
+        <div class="ic">🤖</div>
+        <h3>AI Agent</h3>
+        <p>Runs in your editor. Holds only a throwaway local token.</p>
+        <span class="port">→ 127.0.0.1:8787</span>
+      </div>
+
+      <div class="node broker" id="n-broker">
+        <span class="pill" id="brokerPill">gatekeeper</span>
+        <div class="ic">🛡️</div>
+        <h3>secret-broker</h3>
+        <p>Checks the rules, injects the real key, scrubs secrets.</p>
+        <div class="vault" id="vault">
+          <div class="vrow">
+            <span class="vlabel">🔐 Secret vault</span>
+            <button class="reveal" id="revealBtn">reveal</button>
+          </div>
+          <div class="vrow" style="margin-top:8px">
+            <span class="keychip" id="keychip">OPENAI_API_KEY = ••••••••••••</span>
+          </div>
+          <div class="mini">The agent never gets this toggle in real life.</div>
+        </div>
+      </div>
+
+      <div class="node upstream" id="n-upstream">
+        <span class="pill">real API</span>
+        <div class="ic">☁️</div>
+        <h3>Upstream API</h3>
+        <p>e.g. OpenAI / GitHub. Only allow-listed paths are reachable.</p>
+        <span class="port">api.openai.com</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="hd"><h4>Payload inspector</h4><div class="dotrow"><i></i><i></i><i></i></div></div>
+      <div class="inspector" id="inspector">
+        <div class="empty">Pick a scenario to see the live request / response at each hop.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="hd"><h4>What's happening</h4><div class="dotrow"><i></i><i></i><i></i></div></div>
+      <div class="log" id="log">
+        <div class="empty">The step-by-step narration will appear here.</div>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:rgba(220,51,33,.5)"></i> stripped / blocked</span>
+    <span><i class="sw" style="background:rgba(138,90,6,.6)"></i> real key injected (server-side)</span>
+    <span><i class="sw" style="background:rgba(31,122,61,.6)"></i> redacted / safe</span>
+  </div>
+
+  <!-- ADMIN LANE -->
+  <div class="section-title">§2 · Your terminal — approval channel (port 8788, admin token the agent never has)</div>
+  <div class="admin">
+    <div class="hd">
+      <span class="ic">🧑‍💻</span>
+      <h4>broker-approve</h4>
+      <span class="sub">X-Admin-Token ✔</span>
+    </div>
+    <div class="queue" id="queue">
+      <div class="hint">No pending requests. Try “Risky task” above — it will land here for your decision.</div>
+    </div>
+  </div>
+
+  <!-- GUARDS -->
+  <div class="section-title">§3 · The guards (they light up as they trigger)</div>
+  <div class="badges" id="badges">
+    <div class="badge" data-k="strip"><span class="x">✓</span> Client auth stripped</div>
+    <div class="badge" data-k="inject"><span class="x">✓</span> Real key injected server-side</div>
+    <div class="badge" data-k="redact"><span class="x">✓</span> Secrets redacted</div>
+    <div class="badge" data-k="allow"><span class="x">✓</span> Allowlist (default deny)</div>
+    <div class="badge" data-k="traversal"><span class="x">✓</span> Path-traversal / SSRF blocked</div>
+    <div class="badge" data-k="enum"><span class="x">✓</span> No arbitrary commands</div>
+    <div class="badge" data-k="approve"><span class="x">✓</span> Approval gate</div>
+  </div>
+
+  <footer>
+    <span>Secret-Broker · a manifesto, and a working tool.</span>
+    <a href="https://github.com/Thiruvenkatesan1322/Secret_Broker" target="_blank" rel="noopener">github.com/Thiruvenkatesan1322/Secret_Broker →</a>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const packet = $("packet"), packetLbl = $("packetLbl");
+  const inspector = $("inspector"), logEl = $("log"), queue = $("queue");
+  const nodes = { agent:$("n-agent"), broker:$("n-broker"), upstream:$("n-upstream") };
+  const POS = { agent:"16.6%", broker:"50%", upstream:"83.4%" };
+  const REAL_KEY = "sk-proj-REAL-7h3Kx92bQ";
+  let running = false, speed = 1.2, revealed = false, decide = null;
+
+  const speedEl = $("speed");
+  speedEl.addEventListener("input", () => speed = parseFloat(speedEl.value));
+  const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
+
+  function setActive(id){
+    Object.values(nodes).forEach(n => n.classList.remove("active"));
+    if (id) nodes[id].classList.add("active");
+  }
+  function log(text, kind="info", mark="i"){
+    if (logEl.querySelector(".empty")) logEl.innerHTML = "";
+    const li = document.createElement("div");
+    li.className = "li " + kind;
+    li.innerHTML = `<span class="b">${mark}</span><span>${text}</span>`;
+    logEl.appendChild(li);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function inspect(title, lines){
+    inspector.innerHTML = `<div class="ttl">${title}</div>` +
+      lines.map(l => `<div class="ln ${l.c||""}">${l.t}</div>`).join("");
+  }
+  async function move(to, label, bad=false){
+    packet.classList.toggle("bad", bad);
+    packetLbl.textContent = label;
+    packet.style.opacity = "1";
+    packet.style.left = POS[to];
+    await sleep(950);
+  }
+  function hidePacket(){ packet.style.opacity = "0"; }
+  function vaultGlow(on){ $("vault").classList.toggle("glow", on); }
+  function badge(k, on=true){ document.querySelector(`.badge[data-k="${k}"]`)?.classList.toggle("on", on); }
+
+  function reset(){
+    setActive(null); hidePacket(); vaultGlow(false);
+    packet.style.transition = "none"; packet.style.left = POS.agent;
+    requestAnimationFrame(()=> packet.style.transition = "");
+    inspector.innerHTML = `<div class="empty">Pick a scenario to see the live request / response at each hop.</div>`;
+    logEl.innerHTML = `<div class="empty">The step-by-step narration will appear here.</div>`;
+    queue.innerHTML = `<div class="hint">No pending requests. Try “Risky task” above — it will land here for your decision.</div>`;
+    document.querySelectorAll(".badge").forEach(b=>b.classList.remove("on"));
+  }
+
+  function setButtons(disabled){
+    document.querySelectorAll(".scn").forEach(b => b.disabled = disabled);
+  }
+  async function run(fn){
+    if (running) return;
+    running = true; setButtons(true); reset(); await sleep(150);
+    try { await fn(); } finally { running = false; setButtons(false); }
+  }
+
+  $("revealBtn").addEventListener("click", () => {
+    revealed = !revealed;
+    $("keychip").textContent = "OPENAI_API_KEY = " + (revealed ? REAL_KEY : "••••••••••••");
+    $("revealBtn").textContent = revealed ? "hide" : "reveal";
+  });
+
+  // ---------- Scenario 1: proxy ----------
+  async function scenarioProxy(){
+    setActive("agent");
+    log("Agent builds a request with only its local token — and even tries to sneak in its own auth header.", "step", "1");
+    inspect("Agent → Broker  (127.0.0.1:8787)", [
+      {t:"GET /proxy/openai/v1/models"},
+      {t:"X-Broker-Token: tok_agent_8f3k2j", c:"dim"},
+      {t:"Authorization: Bearer sk-FAKE-agent-sneaked", c:""},
+    ]);
+    await sleep(1200);
+
+    await move("broker", "request");
+    setActive("broker");
+    log("Broker checks the rules: service ✓, path ✓, method ✓, rate-limit ✓ (default-deny otherwise).", "good", "2");
+    badge("allow");
+    await sleep(900);
+
+    vaultGlow(true);
+    inspect("Broker rewrites the request", [
+      {t:"X-Broker-Token: …            (not forwarded)", c:"strike"},
+      {t:"Authorization: Bearer sk-FAKE-agent-sneaked   (stripped)", c:"strike"},
+      {t:`Authorization: Bearer ${revealed ? REAL_KEY : "••••••••••••"}   (injected by broker)`, c:"inject"},
+    ]);
+    log("It <b>strips the agent's headers</b> and <b>injects the real key</b> from the vault — server-side.", "warn", "3");
+    badge("strip"); badge("inject");
+    await sleep(1500);
+
+    await move("upstream", "authed call");
+    setActive("upstream"); vaultGlow(false);
+    log("Upstream receives a properly authenticated call and responds (here it even echoes the key back).", "info", "4");
+    inspect("Upstream → Broker  (raw response)", [
+      {t:'{'},
+      {t:'  "data": ["gpt-4","gpt-4o"],'},
+      {t:`  "key_used": "${REAL_KEY}"`, c:"secret"},
+      {t:'}'},
+    ]);
+    await sleep(1500);
+
+    await move("broker", "response");
+    setActive("broker");
+    log("Broker <b>redacts</b> every secret from the body before it goes back.", "good", "5");
+    badge("redact");
+    inspect("Broker scrubs the response", [
+      {t:'{'},
+      {t:'  "data": ["gpt-4","gpt-4o"],'},
+      {t:'  "key_used": "***REDACTED***"', c:"redact"},
+      {t:'}'},
+    ]);
+    await sleep(1400);
+
+    await move("agent", "safe result");
+    setActive("agent");
+    log("Agent gets the result it needed — but <b>never the key</b>. ✅", "good", "✓");
+    inspect("What the Agent finally sees", [
+      {t:'{'},
+      {t:'  "data": ["gpt-4","gpt-4o"],'},
+      {t:'  "key_used": "***REDACTED***"', c:"redact"},
+      {t:'}'},
+      {t:"", c:"dim"},
+      {t:"// sk-FAKE never reached the API · real key never reached the agent", c:"good"},
+    ]);
+    await sleep(600); hidePacket();
+  }
+
+  // ---------- Scenario 2: task + approval ----------
+  function renderQueue(status, output){
+    const disabled = status !== "pending";
+    queue.innerHTML = `
+      <div class="qrow">
+        <span class="meta"><b>deploy_staging</b> <span class="args">args={target:"staging"}</span></span>
+        <span class="status ${status}" id="qstatus">${status}</span>
+        <span class="sp"></span>
+        <button class="btn-approve" id="qApprove" ${disabled?"disabled":""}>approve</button>
+        <button class="btn-deny" id="qDeny" ${disabled?"disabled":""}>deny</button>
+        <div class="outbox" id="qout" style="${output?'display:block':''}">${output||""}</div>
+      </div>`;
+    if (!disabled){
+      $("qApprove").onclick = () => decide && decide("approve");
+      $("qDeny").onclick    = () => decide && decide("deny");
+    }
+  }
+  function waitDecision(){ return new Promise(res => decide = res); }
+
+  async function scenarioTask(){
+    setActive("agent");
+    log("Agent submits a <b>named</b> task (not an arbitrary command).", "step", "1");
+    inspect("Agent → Broker", [
+      {t:"POST /tasks/deploy_staging"},
+      {t:"X-Broker-Token: tok_agent_8f3k2j", c:"dim"},
+      {t:'{ "args": { "target": "staging" } }'},
+    ]);
+    await sleep(1200);
+
+    await move("broker", "submit");
+    setActive("broker");
+    log("Args validated against the schema (target ∈ {staging, preview}). Request stored as <b>PENDING</b> — nothing runs.", "warn", "2");
+    badge("enum");
+    inspect("Broker → Agent", [
+      {t:'{ "request_id":"a1b2c3", "status":"pending" }', c:""},
+    ]);
+    renderQueue("pending");
+    await sleep(900);
+    hidePacket();
+
+    log("The agent can only wait. Approval lives on a <b>separate port + token it doesn't have</b>.", "info", "3");
+    log("👉 Your move: click <b>approve</b> or <b>deny</b> in your terminal below.", "step", "!");
+
+    const choice = await waitDecision();
+    decide = null;
+    badge("approve");
+
+    if (choice === "approve"){
+      renderQueue("success", "$ python deploy.py staging\nwould deploy to staging ✓  (exit 0)");
+      log("You approved it. <b>Only now</b> does the broker run the fixed command (no shell).", "good", "✓");
+      inspect("Agent polls  GET /tasks/requests/a1b2c3", [
+        {t:'{ "status":"success",'},
+        {t:'  "stdout":"would deploy to staging" }', c:"good"},
+      ]);
+    } else {
+      renderQueue("denied");
+      log("You denied it. The task is dead — it <b>never executed</b>.", "bad", "✕");
+      inspect("Agent polls  GET /tasks/requests/a1b2c3", [
+        {t:'{ "status":"denied", "stdout":"" }', c:"dim"},
+      ]);
+    }
+  }
+
+  // ---------- Scenario 3: attacks ----------
+  async function scenarioAttack(){
+    log("Simulating a <b>prompt-injected</b> agent trying to break out. Watch everything fail closed.", "step", "⚠");
+    await sleep(700);
+
+    setActive("agent");
+    inspect("Attack 1 · path traversal / SSRF", [
+      {t:"GET /proxy/openai/../../etc/passwd", c:"secret"},
+    ]);
+    await move("broker", "malicious path", true);
+    setActive("broker");
+    log("<b>Attack 1:</b> path traversal to escape the allowlist → cleaned & rejected.", "bad", "⛔");
+    badge("traversal"); badge("allow");
+    inspect("Broker response", [{t:"HTTP 400 · invalid path", c:"redact"}]);
+    await sleep(1300); hidePacket(); await sleep(300);
+
+    setActive("agent");
+    inspect("Attack 2 · command injection via task arg", [
+      {t:'POST /tasks/deploy_staging'},
+      {t:'{ "args": { "target": "staging; rm -rf /" } }', c:"secret"},
+    ]);
+    await move("broker", "evil arg", true);
+    setActive("broker");
+    log("<b>Attack 2:</b> shell metacharacters in an arg → fails enum validation; args run as argv, never a shell.", "bad", "⛔");
+    badge("enum");
+    inspect("Broker response", [{t:"HTTP 400 · target must be one of [staging, preview]", c:"redact"}]);
+    await sleep(1400); hidePacket(); await sleep(300);
+
+    setActive("agent");
+    inspect("Attack 3 · agent tries to approve itself", [
+      {t:"POST /tasks/requests/a1b2c3/approve"},
+      {t:"X-Broker-Token: tok_agent_8f3k2j", c:"dim"},
+    ]);
+    await move("broker", "self-approve", true);
+    setActive("broker");
+    log("<b>Attack 3:</b> self-approval → that door doesn't exist on the agent port.", "bad", "⛔");
+    badge("approve");
+    inspect("Broker response", [
+      {t:"HTTP 404 · no such route", c:"redact"},
+      {t:"// approval only on :8788 with the admin token", c:"good"},
+    ]);
+    await sleep(1200); hidePacket();
+    log("Every attempt failed closed. The agent could only ever <b>ask</b> — never take.", "good", "✓");
+  }
+
+  $("btnProxy").addEventListener("click", () => run(scenarioProxy));
+  $("btnTask").addEventListener("click", () => run(scenarioTask));
+  $("btnAttack").addEventListener("click", () => run(scenarioAttack));
+  $("btnReset").addEventListener("click", () => { if (!running) reset(); });
+
+  reset();
+})();
+</script>
+</body>
+</html>
