@@ -9,21 +9,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    /* Night Foundry */
-    --color-paper:oklch(13% 0.014 265);
-    --color-paper-2:oklch(17% 0.016 265);
-    --color-ink:oklch(96% 0.006 262);
-    --color-ink-2:oklch(82% 0.01 262);
-    --color-muted:oklch(66% 0.012 262);
-    --color-accent:oklch(76% 0.17 50);        /* molten brass */
-    --color-accent-deep:oklch(62% 0.15 50);
-    --color-accent-2:oklch(68% 0.16 18);      /* coral chord — verb landmark */
-    --color-mint:oklch(80% 0.16 150);
-    --color-glow:oklch(80% 0.16 50 / .42);
-    --color-paper-emit:oklch(76% 0.17 50 / .05);
-    --color-rule:oklch(96% 0.006 262 / .12);
-    --color-rule-2:oklch(96% 0.006 262 / .22);
-    --rule-blueprint:oklch(96% 0.006 262 / .05);
+    /* Day Foundry (light) */
+    --color-paper:oklch(97.8% 0.005 265);
+    --color-paper-2:oklch(95% 0.008 265);
+    --color-ink:oklch(23% 0.02 265);
+    --color-ink-2:oklch(36% 0.02 265);
+    --color-muted:oklch(50% 0.018 265);
+    --color-accent:oklch(56% 0.14 55);        /* molten brass (deepened for light) */
+    --color-accent-deep:oklch(48% 0.13 52);
+    --color-accent-2:oklch(55% 0.19 20);      /* coral chord — verb landmark */
+    --color-mint:oklch(52% 0.13 155);
+    --color-glow:oklch(68% 0.16 55 / .34);
+    --color-paper-emit:oklch(72% 0.16 55 / .06);
+    --color-rule:oklch(23% 0.02 265 / .14);
+    --color-rule-2:oklch(23% 0.02 265 / .26);
+    --rule-blueprint:oklch(23% 0.02 265 / .055);
     --font-display:"Instrument Serif","Tiempos Headline",ui-serif,Georgia,serif;
     --font-body:"Geist",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     --font-mono:"JetBrains Mono",ui-monospace,"Cascadia Code",Consolas,monospace;
@@ -104,11 +104,11 @@
     background:transparent;text-transform:lowercase;transition:transform .16s var(--ease-soft),background .2s,border-color .2s}
   button:active{transform:translateY(1px)}
   .scn{background:var(--color-accent);color:oklch(20% 0.03 60);border-color:transparent;font-weight:600}
-  .scn:hover{transform:translateY(-2px);background:oklch(80% 0.17 55)}
+  .scn:hover{transform:translateY(-2px);background:oklch(50% 0.15 55)}
   .scn.alt{background:transparent;color:var(--color-ink)}
   .scn.alt:hover{transform:translateY(-2px);border-color:var(--color-accent)}
   .scn.danger{background:var(--color-accent-2);color:oklch(18% 0.03 20);border-color:transparent;font-weight:600}
-  .scn.danger:hover{transform:translateY(-2px);background:oklch(72% 0.17 20)}
+  .scn.danger:hover{transform:translateY(-2px);background:oklch(49% 0.19 20)}
   .scn:disabled{opacity:.4;cursor:not-allowed;transform:none}
   .ghost{color:var(--color-muted)}
   .ghost:hover{color:var(--color-ink);border-color:var(--color-rule-2)}
@@ -135,21 +135,21 @@
   .node .port{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;
     font-size:10.5px;color:var(--color-accent);margin-top:9px;display:inline-block;opacity:.9}
   .node.active{border-color:var(--color-accent);transform:translateY(-4px);
-    background:radial-gradient(130% 90% at 80% -10%,oklch(76% 0.17 50 / .12),transparent 60%),var(--color-paper)}
+    background:radial-gradient(130% 90% at 80% -10%,oklch(72% 0.16 55 / .14),transparent 60%),var(--color-paper)}
   .node .pill{position:absolute;top:13px;right:13px;font-size:9.5px;padding:3px 8px;border-radius:999px;
     color:var(--color-muted);border:1px solid var(--color-rule-2)}
   .node.agent .pill{color:var(--color-accent-2);border-color:oklch(68% 0.16 18 / .4)}
   .node.upstream .pill{color:var(--color-mint);border-color:oklch(80% 0.16 150 / .4)}
 
   .vault{margin-top:12px;border:1px solid var(--color-rule);border-radius:11px;padding:11px;
-    background:radial-gradient(120% 100% at 50% 0%,oklch(76% 0.17 50 / .03),transparent 60%),oklch(15% 0.016 265);
+    background:radial-gradient(120% 100% at 50% 0%,oklch(72% 0.16 55 / .05),transparent 60%),oklch(93% 0.012 265);
     transition:.26s}
   .vault .vrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .vault .vlabel{font-size:10px;color:var(--color-muted)}
   .keychip{font-family:var(--font-mono);font-size:12px;color:var(--color-accent);
     background:oklch(76% 0.17 50 / .08);border:1px solid oklch(76% 0.17 50 / .28);border-radius:8px;padding:4px 8px;white-space:nowrap}
   .vault.glow{border-color:var(--color-accent);
-    background:radial-gradient(120% 120% at 50% 0%,oklch(76% 0.17 50 / .16),transparent 62%),oklch(16% 0.02 60)}
+    background:radial-gradient(120% 120% at 50% 0%,oklch(72% 0.17 55 / .2),transparent 62%),oklch(95% 0.035 75)}
   .mini{font-size:10.5px;color:var(--color-muted);margin-top:7px}
   .reveal{font-size:11px;color:var(--color-accent);background:transparent;border:1px solid var(--color-rule-2);
     padding:3px 9px;border-radius:8px;text-transform:lowercase}
@@ -353,9 +353,9 @@
       </div>
     </div>
     <div class="legend">
-      <span><i class="sw" style="background:oklch(68% 0.16 18 / .7)"></i> stripped / blocked</span>
-      <span><i class="sw" style="background:oklch(76% 0.17 50 / .8)"></i> real key injected (server-side)</span>
-      <span><i class="sw" style="background:oklch(80% 0.16 150 / .7)"></i> redacted / safe</span>
+      <span><i class="sw" style="background:oklch(55% 0.19 20 / .9)"></i> stripped / blocked</span>
+      <span><i class="sw" style="background:oklch(56% 0.14 55 / .95)"></i> real key injected (server-side)</span>
+      <span><i class="sw" style="background:oklch(52% 0.13 155 / .9)"></i> redacted / safe</span>
     </div>
   </section>
 
@@ -391,7 +391,7 @@
   </section>
 
   <footer>
-    <span>secret-broker · lumen · night foundry</span>
+    <span>secret-broker · lumen · day foundry</span>
     <a href="https://github.com/Thiruvenkatesan1322/Secret_Broker" target="_blank" rel="noopener">github.com/thiruvenkatesan1322/secret_broker →</a>
   </footer>
 </div>
