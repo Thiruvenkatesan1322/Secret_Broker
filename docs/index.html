@@ -226,10 +226,29 @@
     *{animation:none!important}
     h1.hero__title em::after{transform:scaleX(1)}
   }
+  /* architecture cards (where the key lives) + request lifecycle (added) */
+  .arch{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .arch .cell{position:relative;border:1px solid var(--color-rule);border-radius:14px;padding:16px;
+    background:radial-gradient(120% 80% at 80% -10%,var(--color-paper-emit),transparent 55%),var(--color-paper-2)}
+  .arch .cell .code{display:inline-block;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.1em;
+    font-size:11px;color:var(--color-accent);border:1px solid var(--color-rule-2);border-radius:7px;padding:3px 8px;margin-bottom:10px}
+  .arch .cell h3{font-family:var(--font-body);margin:0 0 5px;font-size:15px;font-weight:600;color:var(--color-ink)}
+  .arch .cell p{margin:0;color:var(--color-muted);font-size:12.5px}
+  .arch .cell .lock{position:absolute;top:16px;right:14px;color:var(--color-mint);
+    font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;font-size:10px}
+  .flow{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
+  .flow li{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--color-rule);
+    border-radius:12px;padding:11px 14px;background:var(--color-paper-2)}
+  .flow li .n{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;
+    font-family:var(--font-mono);font-size:12px;color:var(--color-accent);border:1px solid var(--color-rule-2)}
+  .flow li .t{font-size:13.5px;color:var(--color-ink-2)}
+  .flow li .t b{color:var(--color-ink)}
+
   @media (max-width:860px){
     .nodes{grid-template-columns:1fr}.wire,.packet{display:none}
     .grid2{grid-template-columns:1fr}.stats{grid-template-columns:1fr}
     .stat{border-right:none;border-bottom:1px solid var(--color-rule)}
+    .arch{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -257,9 +276,35 @@
     <p class="meter__label">default · deny</p>
   </aside>
 
-  <!-- 01 · THE WIRE -->
+  <!-- 01 · WHERE YOUR KEY LIVES -->
   <section class="block">
-    <p class="eyebrow"><span class="n">01</span> · the wire</p>
+    <p class="eyebrow"><span class="n">01</span> · where your key lives</p>
+    <h2>the key is never near the agent</h2>
+    <div class="arch">
+      <div class="cell">
+        <span class="lock">encrypted</span>
+        <span class="code">key</span>
+        <h3>your real key</h3>
+        <p>stored in the os keychain or an acl-locked folder — never in the project, a .env, or git.</p>
+      </div>
+      <div class="cell">
+        <span class="lock">separate user</span>
+        <span class="code">brk</span>
+        <h3>the broker</h3>
+        <p>runs as a dedicated low-privilege user. only it can read the key, and it injects it server-side.</p>
+      </div>
+      <div class="cell">
+        <span class="lock">token only</span>
+        <span class="code">agt</span>
+        <h3>the agent</h3>
+        <p>gets a throwaway token and the localhost port — it can't read the key, the folder, or the broker process.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 · THE WIRE -->
+  <section class="block">
+    <p class="eyebrow"><span class="n">02</span> · the wire</p>
     <h2>watch it move</h2>
 
     <div class="controls">
@@ -332,11 +377,20 @@
       <span><i class="sw" style="background:oklch(56% 0.14 55 / .95)"></i> real key injected (server-side)</span>
       <span><i class="sw" style="background:oklch(52% 0.13 155 / .9)"></i> redacted / safe</span>
     </div>
+
+    <ol class="flow">
+      <li><span class="n">1</span><span class="t">agent sends the request with its <b>token</b> — no key.</span></li>
+      <li><span class="n">2</span><span class="t">broker checks <b>token → service → path → allowlist</b> (default deny).</span></li>
+      <li><span class="n">3</span><span class="t">broker <b>strips</b> any client auth and <b>injects your real key</b> server-side.</span></li>
+      <li><span class="n">4</span><span class="t">forwards to the <b>allow-listed host only</b> — redirects are never followed.</span></li>
+      <li><span class="n">5</span><span class="t">broker <b>redacts</b> every secret from the response.</span></li>
+      <li><span class="n">6</span><span class="t">agent gets the result — <b>never the key</b>.</span></li>
+    </ol>
   </section>
 
-  <!-- 02 · GUARANTEES -->
+  <!-- 03 · GUARANTEES -->
   <section class="block">
-    <p class="eyebrow"><span class="n">02</span> · guarantees</p>
+    <p class="eyebrow"><span class="n">03</span> · guarantees</p>
     <h2>the guards</h2>
     <div class="badges" id="badges">
       <div class="badge" data-k="strip"><span class="x">✓</span> client auth stripped</div>
@@ -344,6 +398,7 @@
       <div class="badge" data-k="redact"><span class="x">✓</span> secrets redacted</div>
       <div class="badge" data-k="allow"><span class="x">✓</span> allowlist · default deny</div>
       <div class="badge" data-k="traversal"><span class="x">✓</span> path-traversal / ssrf blocked</div>
+      <div class="badge" data-k="isolated"><span class="x">✓</span> runs as a separate user</div>
     </div>
   </section>
 
@@ -533,6 +588,20 @@
     inspect("broker response", [
       {t:"HTTP 400 · invalid path", c:"redact"},
       {t:"// redirects are never followed; host is pinned", c:"good"},
+    ]);
+    await sleep(1200); hidePacket(); await sleep(300);
+
+    setActive("agent");
+    inspect("attack 4 · skip the broker, read the key file directly", [
+      {t:"Get-Content C:\\ProgramData\\secret-broker\\openai.key", c:"secret"},
+    ]);
+    await move("broker", "read key?", true);
+    setActive("broker");
+    log("<b>attack 4:</b> the key sits in a folder owned by a separate user — the agent can't read it.", "bad", "x");
+    badge("isolated");
+    inspect("os response", [
+      {t:"Access is denied.", c:"redact"},
+      {t:"// broker runs as another user; the key is never readable by the agent", c:"good"},
     ]);
     await sleep(1200); hidePacket();
     log("every attempt failed closed. the agent could only ever <b>ask</b> — never take.", "good", "✓");
