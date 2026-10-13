@@ -35,17 +35,19 @@ from urllib.parse import unquote, urlsplit
 
 # --- 1) WHAT THE AGENT MAY CALL (default deny; edit me) ------------------------------
 SERVICES: dict[str, dict] = {
-    "openai": {
-        "base_url": "https://api.openai.com",
-        "secret": "OPENAI_API_KEY",          # name of the env var / keychain entry
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",   # Groq's OpenAI-compatible API
+        "secret": "GROQ_API_KEY",             # name of the env var / keychain entry
         "auth_header": "Authorization",
         "auth_format": "Bearer {secret}",
         "allow": [                            # (method, exact path regex) pairs
-            ("GET", r"v1/models"),
-            ("POST", r"v1/chat/completions"),
-            ("POST", r"v1/embeddings"),
+            ("GET", r"models"),
+            ("POST", r"chat/completions"),
         ],
     },
+    # "openai": {"base_url": "https://api.openai.com", "secret": "OPENAI_API_KEY",
+    #   "auth_header": "Authorization", "auth_format": "Bearer {secret}",
+    #   "allow": [("GET", r"v1/models"), ("POST", r"v1/chat/completions")]},
     # "github": {"base_url": "https://api.github.com", "secret": "GITHUB_TOKEN",
     #   "auth_header": "Authorization", "auth_format": "Bearer {secret}",
     #   "allow": [("GET", r"repos/[^/]+/[^/]+/issues")]},
