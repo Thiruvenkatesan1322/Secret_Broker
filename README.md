@@ -72,6 +72,34 @@ Not in the project directory and not in a plaintext `.env`. Use either:
 **Limitation:** if the agent runs as the *same OS user* as the broker, it could read the same
 environment/keychain. For a hard boundary, run the broker as a different OS user or in a VM.
 
+## Run isolated on this machine (no Docker)
+
+To make the boundary real on Windows, run the broker as a **dedicated low-privilege user** so an
+agent running as you can't read its key, environment, or process — it can only reach the port.
+Scripts are in [`isolate/`](isolate):
+
+```powershell
+# One time, in an ELEVATED PowerShell (Run as administrator):
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\isolate\setup-broker-user.ps1          # prompts (hidden) for your API key; prints a token
+```
+
+This creates a `secretbroker` local user, locks down `C:\ProgramData\secret-broker` with NTFS
+ACLs (your normal user can't read it), stores the key + token there, and registers a Scheduled
+Task that runs the broker as `secretbroker` on `127.0.0.1:8787`. Then, in **your** shell:
+
+```powershell
+$env:BROKER_TOKEN = "tok_..."            # the token the script printed
+curl http://127.0.0.1:8787/health
+```
+
+Remove it all with `.\isolate\uninstall-broker-user.ps1` (elevated).
+
+**This is a hard boundary only if your agent runs as a _standard (non-admin)_ user.** A local
+administrator can bypass any same-machine isolation — in that case use a separate VM or host and
+expose only `127.0.0.1:8787` to the agent. Python should be installed for **all users** so the
+broker user can run it.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
