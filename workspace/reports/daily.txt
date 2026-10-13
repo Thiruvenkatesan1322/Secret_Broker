@@ -1,5 +1,0 @@
-Daily report (sample workspace file)
-=====================================
-This file lives in the read-only task workspace mounted into the broker container.
-The `fetch_report` task reads it to demonstrate an auto-approved, read-only task.
-No secrets here.
